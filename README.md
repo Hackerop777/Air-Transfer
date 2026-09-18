@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # ✋ Air Transfer (AirXfer)
 ### *Touchless, Gesture-Controlled File Sharing for Android*
@@ -100,7 +100,7 @@ Receiver:  ✊ Fist Armed  ──[ Open Palm ]───>  🖐️ Open Palm ("RE
 
 ### Option 1: Direct APK Download
 1. Head to [**Releases**](https://github.com/Hackerop777/Air-Transfer/releases) or download the prebuilt binary directly:
-   - **`release/AirTransfer-v1.0.0-preview.apk`**
+   - [**📥 Download AirTransfer-v1.0.0-preview.apk**](https://github.com/Hackerop777/Air-Transfer/releases/download/v1.0.0-preview/AirTransfer-v1.0.0-preview.apk)
 2. Install the APK on two Android devices (Android 9.0+ / API 28+).
 3. Ensure both devices have **Wi-Fi** and **Bluetooth** enabled (no active internet or shared Wi-Fi network is required).
 4. Launch **Air Transfer** on both devices:
