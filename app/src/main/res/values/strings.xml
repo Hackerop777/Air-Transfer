@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Air Transfer</string>
+    <string name="send_title">Send Files</string>
+    <string name="receive_title">Receive Files</string>
+    <string name="transfer_title">Transferring</string>
+</resources>
