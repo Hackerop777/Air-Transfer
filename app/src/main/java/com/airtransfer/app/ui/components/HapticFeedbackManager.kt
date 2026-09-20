@@ -75,4 +75,10 @@ class HapticFeedbackManager(private val context: Context) {
             }
         } catch (_: Exception) {}
     }
+
+    fun performTick() = tick()
+    fun performArmHaptic() = tick()
+    fun performGrabHaptic() = actionConfirmed()
+    fun performReleaseHaptic() = actionConfirmed()
+    fun performSuccess() = transferSuccess()
 }

@@ -1,7 +1,7 @@
 <div align="center">
 
-# ✋ Air Transfer (AirXfer)
-### *Touchless, Gesture-Controlled File Sharing for Android*
+# ✋ Air Transfer (AirXfer) V2
+### *System-Wide Touchless Spatial Screen Transfer for Android*
 
 **Grab. Move. Release.**
 
@@ -9,130 +9,150 @@
 [![Platform](https://img.shields.io/badge/Platform-Android_9.0%2B_(API_28%2B)-3DDC84.svg?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-On--Device_Vision-FF6F00.svg?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/mediapipe)
-[![P2P Wi-Fi](https://img.shields.io/badge/Transport-Nearby_Connections_P2P-4285F4.svg?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/nearby/connections/overview)
+[![P2P Mesh](https://img.shields.io/badge/Transport-Nearby_P2P_Cluster-4285F4.svg?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/nearby/connections/overview)
 
 <br/>
 
 <img src="assets/air_transfer_preview.gif" alt="Air Transfer Gesture Demonstration" width="700" style="border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" />
 
 <p align="center">
-  <em>Watch the full high-resolution product announcement film: <a href="assets/air_transfer_announcement.mp4"><b>assets/air_transfer_announcement.mp4</b></a></em>
+  <em>Watch the full product announcement film: <a href="assets/air_transfer_announcement.mp4"><b>assets/air_transfer_announcement.mp4</b></a></em>
 </p>
 
 </div>
 
 ---
 
-## 🌟 The Vision
+## 🚀 What's New in Version 2 (V2)
 
-> **"Today's fun experiment is tomorrow's wish, and the future's essential need."**
+**Air Transfer V2 is a major architectural evolution.** While V1 demonstrated in-app file sharing, **V2 transforms Air Transfer into a system-wide touchless interaction system inspired by Huawei-style air gestures.**
 
-Transferring a file in physical life is effortless: you pick up a document and hand it to the person next to you. On smartphones, however, file sharing still feels like work: open a share sheet, scroll through endless apps, wait for Bluetooth device discovery, select the right name from a list, and wait for confirmation.
-
-**Air Transfer rethinks sharing from the physical world up:**
-- 🧪 **Today:** A playful, tactile Android experiment that lets you literally grab a file out of thin air and toss it to a nearby phone.
-- ⚡ **Tomorrow:** A faster, more natural interaction paradigm for mobile devices without looking at recipient lists.
-- 🌐 **The Future:** A system-level Android capability. What if gestures became part of the OS itself? Reach out, grab, and release—without opening an app. Touchless interaction shouldn't require custom radar hardware or OEM lock-in; just smarter, human-centered software.
-
----
-
-## 🖐️ Core Interaction Model
-
-The interaction revolves around two physical gestures recognized in real-time by the device camera:
-
-```
-Sender:    ✋ Open Palm  ──[ Close Fist ]──>  ✊ Fist Armed ("GRAB")
-                                                   │
-                                            [ Spatial Transit ]
-                                                   │
-Receiver:  ✊ Fist Armed  ──[ Open Palm ]───>  🖐️ Open Palm ("RELEASE & CATCH")
-```
-
-| Phase | Gesture Action | System Response |
-| :--- | :--- | :--- |
-| **1. Select** | Multi-file picker | Files highlighted; CameraX pipeline initializes. |
-| **2. Grab** | **✋ Open Palm $\rightarrow$ ✊ Close Fist** | Target file lifts with elevation shadow and glowing aura; payload armed for transmission. |
-| **3. Move** | Physical proximity | Nearby devices discovered via Bluetooth Low Energy; high-bandwidth Wi-Fi Direct established automatically. |
-| **4. Release** | **✊ Close Fist $\rightarrow$ 🖐️ Open Palm** | Incoming portal captures incoming byte stream; payload saved directly to public storage. |
+You no longer need to keep the app open or manually pick files:
+1. **Enable Air Gestures once** inside Air Transfer.
+2. **Switch to ANY app** on your phone (Chrome, Instagram, YouTube, WhatsApp, Settings, Home Screen, Gallery, etc.).
+3. **Grab the current screen** by showing your palm and closing your fist in front of the front camera.
+4. **Move your closed fist** towards a nearby device.
+5. **Open your fist** at the receiving phone to catch and display the screenshot full-screen, saving it directly into the system Gallery!
 
 ---
 
-## 🛠️ System Architecture
+## 🖐️ The V2 Interaction Model
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       Air Transfer UI                       │
-│      Jetpack Compose Material 3 + Custom Radar Canvas       │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-               ┌───────────────┴───────────────┐
-               ▼                               ▼
-┌─────────────────────────────┐ ┌─────────────────────────────┐
-│      CameraX Vision Pipeline│ │ NearbyTransferManager       │
-│  • ImageAnalysis (30 FPS)   │ │  • Google Nearby Connections│
-│  • YUV to RGB stream        │ │  • P2P Star / Wi-Fi Direct  │
-└──────────────┬──────────────┘ └──────────────┬──────────────┘
-               ▼                               ▼
-┌─────────────────────────────┐ ┌─────────────────────────────┐
-│  MediaPipe Hand Landmarker  │ │ Multi-File Payload Engine   │
-│  • 21 3D landmarks          │ │  • JSON Manifest handshake  │
-│  • On-device CPU/GPU runtime│ │  • Chunked byte streams     │
-│  • Zero Cloud / 100% Private│ │  • Speed & progress state   │
-└──────────────┬──────────────┘ └──────────────┬──────────────┘
-               ▼                               ▼
-┌─────────────────────────────┐ ┌─────────────────────────────┐
-│   GestureStateMachine       │ │ FileRepository & MediaStore │
-│  • Palm vs. Fist classifier │ │  • Download/AirTransfer     │
-│  • Temporal hysteresis debnc│ │  • MediaScannerConnection   │
-│  • Grab / Release event bus │ │  • Instant Gallery / Photos │
-└─────────────────────────────┘ └─────────────────────────────┘
+SENDER DEVICE (Device A):
+┌──────────────┐     ┌──────────────┐     ┌────────────────────────┐
+│  🖐️ Open Palm│ ──> │ ✊ Close Fist │ ──> │ 🎴 Screen Grabs & Docks│
+│  Arms Sensor │     │ Grabs Screen │     │ Soft Cyan Glowing Card │
+└──────────────┘     └──────────────┘     └────────────────────────┘
+                                                       │
+                                              [ Move Hand with Fist ✊ ]
+                                                       │
+RECEIVER DEVICE (Device B):                            ▼
+┌───────────────────────────────┐     ┌──────────────┐     ┌───────────────────────┐
+│ 📥 Incoming Transfer Detected  │ ──> │ 🖐️ Open Palm │ ──> │ ✨ Full-Screen Arrival │
+│ Receiver Locked (No Self-Grab)│     │ Catch Screen │     │ Saved to Gallery      │
+└───────────────────────────────┘     └──────────────┘     └───────────────────────┘
 ```
 
-### Key Technical Highlights
-- **On-Device Machine Learning:** Powered by Google MediaPipe Hand Landmarker (`hand_landmarker.task`). Computes 21 3D coordinate landmarks per hand with sub-millisecond inference time. No external cloud servers or internet connections are ever contacted.
-- **High-Throughput P2P Radio:** Leverages Google Play Services Nearby Connections API (`P2P_STAR` strategy). Automatically negotiates local Wi-Fi Direct or hotspot channels, achieving transfer speeds up to **80 MB/s**.
-- **Public MediaStore Integration:** Received files are placed in `/storage/emulated/0/Download/AirTransfer` and registered with the Android `MediaStore` (Pictures, Movies, Downloads) and `MediaScannerConnection`, ensuring instant visibility in Google Photos, Gallery, and Files apps.
-- **Hardware-Agnostic:** Works on standard front and rear smartphone cameras across all major Android manufacturers without requiring specialized Soli radar, LiDAR, or OEM-specific APIs.
+### Clean Abort on Same Device
+If you grab the screen on Device A and decide not to transfer, simply open your hand back in front of Device A. The card smoothly fades away without crashing or disrupting your current application.
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ V2 Architecture & Under-the-Hood Innovations
 
-### Option 1: Direct APK Download
-1. Head to [**Releases**](https://github.com/Hackerop777/Air-Transfer/releases) or download the prebuilt binary directly:
-   - [**📥 Download AirTransfer-v1.0.0-preview.apk**](https://github.com/Hackerop777/Air-Transfer/releases/download/v1.0.0-preview/AirTransfer-v1.0.0-preview.apk)
-2. Install the APK on two Android devices (Android 9.0+ / API 28+).
-3. Ensure both devices have **Wi-Fi** and **Bluetooth** enabled (no active internet or shared Wi-Fi network is required).
-4. Launch **Air Transfer** on both devices:
-   - Tap **Send** on Device A, pick files, and show your hand to the camera.
-   - Tap **Receive** on Device B.
-   - Close your fist on Device A to **Grab**; open your palm on Device B to **Release & Catch**!
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         System-Wide Interaction                         │
+│   • Home Screen • Chrome • Instagram • YouTube • Camera • Settings      │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     │
+                 ┌───────────────────┴───────────────────┐
+                 ▼                                       ▼
+┌─────────────────────────────────┐     ┌─────────────────────────────────┐
+│       AirGestureService         │     │     ScreenCaptureController     │
+│ • Foreground Service (Camera)   │     │ • MediaProjection Hardware Pipe │
+│ • Non-intrusive lifecycle       │     │ • Zero-latency ImageReader      │
+│ • Quick Settings / Notif Kill   │     │ • Bounded 2-frame memory buffer │
+└────────────────┬────────────────┘     └────────────────┬────────────────┘
+                 ▼                                       ▼
+┌─────────────────────────────────┐     ┌─────────────────────────────────┐
+│   MediaPipe Vision Perception   │     │      AirObject Pipeline         │
+│ • CameraX front sensor stream   │     │ • JPEG compressed byte payload  │
+│ • 21 3D hand landmarks          │     │ • SHA-256 integrity checksum    │
+│ • V2GestureClassifier           │     │ • Pre-buffered P2P stream       │
+└────────────────┬────────────────┘     └────────────────┬────────────────┘
+                 ▼                                       ▼
+┌─────────────────────────────────┐     ┌─────────────────────────────────┐
+│  TemporalGestureStateMachine    │     │   NearbyPresence & Transport    │
+│ • Receiver state locking        │     │ • Strategy.P2P_CLUSTER mesh     │
+│ • Anti-false-grab filter        │     │ • Lexicographical tie-breaker   │
+│ • Fist orientation tolerance    │     │ • Active 1.5s grab beaconing    │
+└────────────────┬────────────────┘     │ • TYPE_REQUEST_TRANSFER pull    │
+                 ▼                      └────────────────┬────────────────┘
+┌─────────────────────────────────┐                      │
+│       SpatialOverlayView        │                      ▼
+│ • Docked glowing preview card   │     ┌─────────────────────────────────┐
+│ • Dynamic HUD status pill       │     │  MediaStore & Public Gallery    │
+│ • Emerald arrival transition    │     │ • Pictures/Screenshots auto-save│
+└─────────────────────────────────┘     └─────────────────────────────────┘
+```
 
-### Option 2: Build from Source
+### 1. Robust P2P Mesh (`Strategy.P2P_CLUSTER`)
+- Upgraded Google Nearby Connections from Point-to-Point to **`Strategy.P2P_CLUSTER`**, enabling symmetric advertising and discovery between phones without master/client role conflicts.
+- **Initiator Tie-Breaking**: When Device A and Device B discover each other simultaneously, only the lexicographically greater endpoint initiates the connection, preventing double-request collisions.
+- **Active Beaconing & Late-Join Sync**: While holding a grabbed screen, Device A broadcasts `TYPE_AIR_GRABBED` every 1.5 seconds. Newly connected peers instantly receive the pre-buffered screenshot bytes.
+- **Bidirectional Catch (`TYPE_REQUEST_TRANSFER`)**: If the receiver triggers a catch gesture before image bytes arrive over the air, it requests the screenshot immediately, ensuring zero failed handshakes.
+
+### 2. Receiver State Locking (Preventing False Self-Grabs)
+- In V2, when Device B receives a peer grab notice, its internal gesture engine transitions into `RECEIVER_EXPECTING`.
+- In this mode, Device B **completely ignores open palms for grabbing**, ensuring that approaching the phone with a hand will never accidentally grab Device B's own screen.
+- Device B strictly awaits the approaching closed fist ✊ (`RECEIVER_FIST_DETECTED`) and subsequent release 🖐️ (`CatchTriggered`).
+
+### 3. Native MediaStore Public Storage
+- Received screenshots are immediately saved to `Pictures/Screenshots` using Android's `MediaStore` and scanned via `MediaScannerConnection`.
+- Transferred screenshots instantly appear in the native **Gallery**, **Google Photos**, and **Files** apps.
+
+### 4. Preserved Legacy V1 In-App Mode
+- The original in-app multi-file transfer system (with custom radar canvas and file picker) remains intact and accessible via the **"Switch to Legacy In-App Mode (V1)"** button at the bottom of the home screen.
+
+---
+
+## 📲 Getting Started
+
+### Download Prebuilt APK
+Download the latest V2 APK directly from GitHub Releases:
+- [**📥 Download AirTransfer-v2.0.0-preview.apk**](https://github.com/Hackerop777/Air-Transfer/releases/download/v2.0.0-preview/AirTransfer-v2.0.0-preview.apk)
+- Legacy V1 release: [AirTransfer-v1.0.0-preview.apk](https://github.com/Hackerop777/Air-Transfer/releases/download/v1.0.0-preview/AirTransfer-v1.0.0-preview.apk)
+
+### First-Time Setup on Both Devices
+1. Install and launch **Air Transfer** on both phones.
+2. Grant the required permissions:
+   - **Camera Access** (for on-device hand gesture detection)
+   - **Display Over Other Apps** (for the floating card and status pill)
+   - **Nearby Wi-Fi / Bluetooth** (for high-speed local P2P transfer)
+   - **Screen Capture** (granted when toggling Air Gestures ON)
+3. Both devices will automatically discover each other in the background (`🟢 Ready with [Device Name]`).
+4. Exit to your home screen or open any app—Air Gestures are active system-wide!
+
+---
+
+## 🔨 Building from Source
+
 ```bash
 # Clone the repository
 git clone https://github.com/Hackerop777/Air-Transfer.git
 cd Air-Transfer
 
-# Build debug APK using Gradle Wrapper
+# Run unit tests
+./gradlew testDebugUnitTest
+
+# Assemble debug APK
 ./gradlew assembleDebug
 
-# Install directly to connected device
+# Install to connected device
 ./gradlew installDebug
 ```
-
----
-
-## 🧭 Android OS Integration Roadmap
-
-Air Transfer was architected from day one so that its modular subsystems can migrate into the Android Open Source Project (AOSP) as a native system capability:
-
-1. **`com.android.server.airtransfer.AirTransferService`**:
-   Background system service managing low-power perception hooks and device rendezvous.
-2. **SystemUI Quick Settings Tile & Ambient Gestures**:
-   Always-ready spatial gestures that can be triggered directly from the lock screen or launcher without launching a standalone app.
-3. **Android Share Sheet Integration**:
-   Direct target in `ChooserActivity` to allow grabbing and casting content from any browser, gallery, or document viewer across physical room space.
 
 ---
 

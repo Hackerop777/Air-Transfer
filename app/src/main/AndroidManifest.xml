@@ -40,6 +40,13 @@
     <!-- Vibration haptic feedback -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- V2 System-Wide Gestures, Overlays, and Foreground Service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".AirTransferApp"
         android:allowBackup="true"
@@ -74,6 +81,13 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Air Transfer V2 System-Wide Gesture Foreground Service -->
+        <service
+            android:name=".service.AirGestureService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="camera|mediaProjection" />
 
     </application>
 
