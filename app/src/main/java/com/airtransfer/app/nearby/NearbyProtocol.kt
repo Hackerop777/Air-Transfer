@@ -21,6 +21,8 @@ object NearbyProtocol {
     const val TYPE_TRANSFER_COMPLETE = "TRANSFER_COMPLETE"
     const val TYPE_CANCEL = "CANCEL"
     const val TYPE_ERROR = "ERROR"
+    const val TYPE_HEARTBEAT_PING = "HEARTBEAT_PING"
+    const val TYPE_HEARTBEAT_PONG = "HEARTBEAT_PONG"
 
     private val json = Json { ignoreUnknownKeys = true }
 

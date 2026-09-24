@@ -23,7 +23,20 @@
 
 ---
 
-## 🚀 What's New in Version 2 (V2)
+## 🚀 What's New in Version 2.01 (Refined UX & Precision Gesture Engine)
+
+Version 2.01 brings major UX enhancements, Huawei-accurate receiving animations, and resilient peer connection stability:
+
+1. **Eye-Comforting Porcelain UI**: Complete visual redesign replacing dark/futuristic tones with a calming, light porcelain palette (`#F8FAFC`, `#FFFFFF`, `#E2E8F0`), soft ambient shadows, and clean modern typography.
+2. **Luminous White Ripples & Receiving Portal**: When receiving an incoming screen, the screen center displays a luminous white core with 3 concentric expanding fluid ripples (`radius 45dp -> 275dp`) with smooth alpha fading.
+3. **Morphing Vector Hand Instruction Badge**: Replaced all cheap text and emojis with a top-center frosted glass badge displaying an animated vector hand that smoothly curls into a fist (grab) and uncurls into an open palm (catch).
+4. **Center-Blooming Screenshot Arrival & Gallery Launch**: The received image blooms up from the center circle with spring physics (`OvershootInterpolator(1.15f)`) and automatically opens in the phone's Gallery viewer.
+5. **Connection Heartbeat & Auto-Healing Watchdog**: 4-second periodic `PING`/`PONG` keepalive sockets prevent OS sleep drops, and an auto-healing watchdog automatically reconnects if peer proximity is lost.
+6. **False-Positive Elimination**: Added a 180ms stability hold on closed fists and required confirmed `OPEN_PALM` for 100ms before accepting transfers, preventing premature catches.
+
+---
+
+## 🌟 The V2 Paradigm (Grab. Move. Release.)
 
 **Air Transfer V2 is a major architectural evolution.** While V1 demonstrated in-app file sharing, **V2 transforms Air Transfer into a system-wide touchless interaction system inspired by Huawei-style air gestures.**
 

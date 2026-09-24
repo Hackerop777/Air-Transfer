@@ -88,9 +88,9 @@ class AirOverlayManager(private val context: Context) {
         }
     }
 
-    fun showArrival(bitmap: Bitmap?) {
+    fun showArrival(bitmap: Bitmap?, uri: android.net.Uri? = null) {
         overlayView?.post {
-            overlayView?.onScreenshotArrived(bitmap)
+            overlayView?.onScreenshotArrived(bitmap, uri)
         }
     }
 

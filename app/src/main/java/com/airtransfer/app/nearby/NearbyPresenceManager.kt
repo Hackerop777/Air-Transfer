@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.Log
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,13 +15,15 @@ data class NearbyPeer(
     val endpointId: String,
     val deviceName: String,
     val isConnected: Boolean = false,
-    val isReady: Boolean = false
+    val isReady: Boolean = false,
+    val lastSeenTimestamp: Long = System.currentTimeMillis()
 )
 
 /**
  * Maintains warm nearby presence via Google Nearby Connections.
  * Keeps advertising and discovery active in the background while Air Gestures is enabled
  * so that devices are already known and connected before the user performs a grab.
+ * Includes a 4-second KeepAlive Heartbeat ping and an auto-healing reconnection watchdog.
  */
 class NearbyPresenceManager(
     private val context: Context,
@@ -29,6 +32,10 @@ class NearbyPresenceManager(
     private val connectionsClient = Nearby.getConnectionsClient(context)
     val localDeviceId: String = UUID.randomUUID().toString().take(8)
     val localDeviceName: String = "Air_${Build.MODEL.replace(" ", "_")}_$localDeviceId"
+
+    private val presenceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var heartbeatJob: Job? = null
+    private var watchdogJob: Job? = null
 
     private val _connectedPeers = MutableStateFlow<Map<String, NearbyPeer>>(emptyMap())
     val connectedPeers: StateFlow<Map<String, NearbyPeer>> = _connectedPeers.asStateFlow()
@@ -40,6 +47,26 @@ class NearbyPresenceManager(
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
+            if (payload.type == Payload.Type.BYTES) {
+                val bytes = payload.asBytes()
+                if (bytes != null) {
+                    val msg = NearbyProtocol.decode(bytes)
+                    if (msg?.type == NearbyProtocol.TYPE_HEARTBEAT_PING) {
+                        // Immediately answer keepalive ping with pong
+                        sendControlMessage(
+                            endpointId,
+                            NearbyProtocol.ControlMessage(
+                                type = NearbyProtocol.TYPE_HEARTBEAT_PONG,
+                                senderId = localDeviceId
+                            )
+                        )
+                        return
+                    } else if (msg?.type == NearbyProtocol.TYPE_HEARTBEAT_PONG) {
+                        // Peer is actively alive
+                        return
+                    }
+                }
+            }
             onIncomingPayload(endpointId, payload)
         }
 
@@ -161,6 +188,7 @@ class NearbyPresenceManager(
         current[peer.endpointId] = peer
         _connectedPeers.value = current
         _primaryTargetPeer.value = current.values.firstOrNull { it.isConnected }
+        startHeartbeat()
     }
 
     private fun removePeer(endpointId: String) {
@@ -168,6 +196,47 @@ class NearbyPresenceManager(
         current.remove(endpointId)
         _connectedPeers.value = current
         _primaryTargetPeer.value = current.values.firstOrNull { it.isConnected }
+        if (current.isEmpty()) {
+            heartbeatJob?.cancel()
+            scheduleAutoHealing()
+        }
+    }
+
+    private fun startHeartbeat() {
+        if (heartbeatJob?.isActive == true) return
+        heartbeatJob = presenceScope.launch {
+            while (isActive && isPresenceActive) {
+                delay(4000L)
+                val connected = _connectedPeers.value.values.filter { it.isConnected }
+                if (connected.isNotEmpty()) {
+                    val ping = NearbyProtocol.ControlMessage(
+                        type = NearbyProtocol.TYPE_HEARTBEAT_PING,
+                        senderId = localDeviceId
+                    )
+                    sendControlMessageToAll(ping)
+                }
+            }
+        }
+    }
+
+    private fun scheduleAutoHealing() {
+        if (!isPresenceActive) return
+        watchdogJob?.cancel()
+        watchdogJob = presenceScope.launch {
+            delay(1500L)
+            if (isPresenceActive && _connectedPeers.value.isEmpty()) {
+                Log.d("NearbyPresence", "Watchdog: 0 connected peers. Re-initiating discovery & advertising mesh...")
+                try {
+                    connectionsClient.stopDiscovery()
+                    connectionsClient.stopAdvertising()
+                } catch (_: Exception) {}
+                delay(500L)
+                if (isPresenceActive && _connectedPeers.value.isEmpty()) {
+                    startAdvertising()
+                    startDiscovery()
+                }
+            }
+        }
     }
 
     fun sendControlMessage(endpointId: String, message: NearbyProtocol.ControlMessage) {
@@ -199,6 +268,10 @@ class NearbyPresenceManager(
         isPresenceActive = false
 
         try {
+            heartbeatJob?.cancel()
+            watchdogJob?.cancel()
+            presenceScope.coroutineContext.cancelChildren()
+
             connectionsClient.stopAdvertising()
             connectionsClient.stopDiscovery()
             connectionsClient.stopAllEndpoints()

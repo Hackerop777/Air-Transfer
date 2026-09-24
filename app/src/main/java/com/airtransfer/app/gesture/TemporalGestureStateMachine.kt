@@ -35,11 +35,16 @@ class TemporalGestureStateMachine(
 
     private val grabHoldingTimeoutMs: Long = 45000L // 45 seconds to carry to another device
     private var fistDetectStartTime: Long? = null
+    private var receiverReleaseStartTime: Long? = null
+    private val receiverFistStabilityThresholdMs: Long = 180L
+    private val receiverReleaseThresholdMs: Long = 100L
 
     fun setReceiverExpecting(expecting: Boolean) {
         if (expecting) {
             if (state == InteractionState.IDLE) {
                 state = InteractionState.RECEIVER_EXPECTING
+                fistDetectStartTime = null
+                receiverReleaseStartTime = null
             }
         } else {
             if (state == InteractionState.RECEIVER_EXPECTING || state == InteractionState.RECEIVER_FIST_DETECTED) {
@@ -94,6 +99,7 @@ class TemporalGestureStateMachine(
                 if (gesture == HandGesture.FIST && (isConfident || result.confidence >= 0.70f)) {
                     state = InteractionState.RECEIVER_FIST_DETECTED
                     fistDetectStartTime = currentTime
+                    receiverReleaseStartTime = null
                     eventListener?.invoke(GestureEvent.ReceiverFistArrived)
                 } else if (gesture == HandGesture.OPEN_PALM && isConfident) {
                     state = InteractionState.PALM_DETECTING
@@ -106,6 +112,7 @@ class TemporalGestureStateMachine(
                     // Hand was arriving as fist, brief transient palm detection corrected
                     state = InteractionState.RECEIVER_FIST_DETECTED
                     fistDetectStartTime = currentTime
+                    receiverReleaseStartTime = null
                     eventListener?.invoke(GestureEvent.ReceiverFistArrived)
                 } else if (gesture == HandGesture.OPEN_PALM && isConfident) {
                     val elapsed = currentTime - (palmDetectStartTime ?: currentTime)
@@ -156,23 +163,35 @@ class TemporalGestureStateMachine(
                 // In RECEIVER_EXPECTING mode: ONLY accept approaching fist.
                 // Disallow OPEN_PALM from ever triggering a grab on this receiving device!
                 if (gesture == HandGesture.FIST && (isConfident || result.confidence >= 0.65f)) {
-                    state = InteractionState.RECEIVER_FIST_DETECTED
-                    fistDetectStartTime = currentTime
-                    eventListener?.invoke(GestureEvent.ReceiverFistArrived)
+                    val firstFistTime = fistDetectStartTime
+                    if (firstFistTime == null) {
+                        fistDetectStartTime = currentTime
+                    } else if (currentTime - firstFistTime >= receiverFistStabilityThresholdMs) {
+                        state = InteractionState.RECEIVER_FIST_DETECTED
+                        receiverReleaseStartTime = null
+                        eventListener?.invoke(GestureEvent.ReceiverFistArrived)
+                    }
+                } else {
+                    fistDetectStartTime = null
                 }
             }
 
             InteractionState.RECEIVER_FIST_DETECTED -> {
-                // User brought fist to receiver; now opens hand to release/catch
-                val isReleaseGesture = (gesture == HandGesture.OPEN_PALM && (isConfident || result.confidence >= 0.65f)) ||
-                        result.openFingersCount >= 3
-                if (isReleaseGesture) {
-                    state = InteractionState.RECEIVER_CATCHING
-                    eventListener?.invoke(GestureEvent.CatchTriggered)
-                    state = InteractionState.COMPLETED
-                    lastCompletedTime = currentTime
-                    eventListener?.invoke(GestureEvent.Completed)
+                // User brought fist to receiver; now strictly requires confirmed OPEN_PALM release to catch
+                val isRealOpenPalm = gesture == HandGesture.OPEN_PALM && (isConfident || result.confidence >= 0.70f) && result.openFingersCount >= 4
+                if (isRealOpenPalm) {
+                    val releaseTime = receiverReleaseStartTime
+                    if (releaseTime == null) {
+                        receiverReleaseStartTime = currentTime
+                    } else if (currentTime - releaseTime >= receiverReleaseThresholdMs) {
+                        state = InteractionState.RECEIVER_CATCHING
+                        eventListener?.invoke(GestureEvent.CatchTriggered)
+                        state = InteractionState.COMPLETED
+                        lastCompletedTime = currentTime
+                        eventListener?.invoke(GestureEvent.Completed)
+                    }
                 } else {
+                    receiverReleaseStartTime = null
                     val elapsedSinceFist = currentTime - (fistDetectStartTime ?: currentTime)
                     if (elapsedSinceFist > sequenceTimeoutMs) {
                         state = InteractionState.CANCELLED

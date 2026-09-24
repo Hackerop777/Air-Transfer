@@ -84,7 +84,7 @@ class AirInteractionSessionManager(
 
         screenshotTransport.onScreenshotReadyToPresent = { uri, bitmap ->
             Log.d("AirSession", "Screenshot ready to present! Showing arrival...")
-            onIncomingScreenshot(bitmap)
+            onIncomingScreenshot(bitmap, uri)
         }
     }
 
@@ -203,9 +203,9 @@ class AirInteractionSessionManager(
         }
     }
 
-    fun onIncomingScreenshot(bitmap: android.graphics.Bitmap?) {
+    fun onIncomingScreenshot(bitmap: android.graphics.Bitmap?, uri: android.net.Uri? = null) {
         hapticManager.performSuccess()
-        overlayManager.showArrival(bitmap)
+        overlayManager.showArrival(bitmap, uri)
     }
 
     fun reset() {

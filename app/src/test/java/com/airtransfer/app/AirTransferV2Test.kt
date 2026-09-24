@@ -142,15 +142,18 @@ class AirTransferV2Test {
 
         var t = 1000L
 
-        // User brings closed fist to receiver
+        // User brings closed fist to receiver and holds it stably (> 180ms)
         val fist = GestureClassificationResult(HandGesture.FIST, 0.9f, 0, true, HandCentroid(0.5f, 0.5f))
+        sm.process(fist, t)
+        t += 200L
         var state = sm.process(fist, t)
         assertEquals(InteractionState.RECEIVER_FIST_DETECTED, state)
         assertTrue(eventReceived is GestureEvent.ReceiverFistArrived)
 
-        // User opens palm in front of receiver -> Catch triggered!
-        t += 200L
+        // User opens palm in front of receiver and holds it open (> 100ms) -> Catch triggered!
         val palm = GestureClassificationResult(HandGesture.OPEN_PALM, 0.9f, 5, true, HandCentroid(0.5f, 0.5f))
+        sm.process(palm, t)
+        t += 150L
         state = sm.process(palm, t)
         assertEquals(InteractionState.COMPLETED, state)
         assertTrue(eventReceived is GestureEvent.Completed)

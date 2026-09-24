@@ -46,7 +46,7 @@ fun AirTransferGlyph(
         val lineStroke = w * 0.06f
         // Vertical line
         drawLine(
-            color = Color(0xFFF8FAFC),
+            color = Color(0xFF2563EB),
             start = Offset(center.x, h * 0.32f),
             end = Offset(center.x, h * 0.68f),
             strokeWidth = lineStroke,
@@ -54,7 +54,7 @@ fun AirTransferGlyph(
         )
         // Horizontal line
         drawLine(
-            color = Color(0xFFF8FAFC),
+            color = Color(0xFF2563EB),
             start = Offset(w * 0.32f, center.y),
             end = Offset(w * 0.68f, center.y),
             strokeWidth = lineStroke,
